@@ -9,6 +9,19 @@ def col_info(column):
     totes = sum (column) +0.0#lawl float
     ncol = map(lambda x: x/totes,column)
     return sum(map(lambda x:x and x*log(len(column)*x,2),ncol))
+
+def sample_motif(motif,charset=charset):
+    return "".join([charset[x] for x in map(sample_column,motif)])
+
+def sample_column(column,charset=charset):
+    total = random.randint(0,sum(column))
+    for (letter,thing) in enumerate(column):
+        if total<thing:
+            return letter
+        else:
+            total -= thing
+
+
 def mot_info(motif):
     return sum(map(col_info,motif))
 
@@ -30,6 +43,7 @@ def create_motif(icpc, length, charset=charset):
 def create_benchmark(icpc=2,ml=8,sl=500,sc=10):
     charset = charset
     sequences = [generaterandom(length=sl) for x in range(0,sc)]
+    motif = create_motif(icpc,ml)
     pass
 
 def write_fasta(filename,strings,identifier="sequence"):
