@@ -1,14 +1,22 @@
 #!/usr/bin/python
 import random
-from math import log
 charset = "ACGT"
 def information(column):
     #notable: assumes bases are uniform
-    return sum(map(lambda x:x and x*log(len(charset)*x),column))
+#normalize column for information purposes
+#returns information in bits. idk whether nats are better?
+    from math import log
+    totes = sum (column)
+    ncol = map(lambda x: x/totes,column)
+    return sum(map(lambda x:x and x*log(len(charset)*x,2),ncol))
 
 def create_motif(icpc, length, charset=charset):
-#should return a PWM with
-    pass
+#should return a PWM with total information icpc*length
+    gencol = lambda : [random.randint(1,10) for y in range(0,len(charset))]
+    motif = [ gencol() for x in range(0,length)]
+    goalinfo = icpc*length
+    random.shuffle(motif)
+    return motif
 
 def create_benchmark(icpc=2,ml=8,sl=500,sc=10):
     charset = charset
