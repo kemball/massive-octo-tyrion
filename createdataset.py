@@ -1,21 +1,30 @@
 #!/usr/bin/python
 import random
 charset = "ACGT"
-def information(column):
+def col_info(column):
     #notable: assumes bases are uniform
 #normalize column for information purposes
 #returns information in bits. idk whether nats are better?
     from math import log
-    totes = sum (column)
+    totes = sum (column) +0.0#lawl float
     ncol = map(lambda x: x/totes,column)
-    return sum(map(lambda x:x and x*log(len(charset)*x,2),ncol))
+    return sum(map(lambda x:x and x*log(len(column)*x,2),ncol))
+def mot_info(motif):
+    return sum(map(col_info,motif))
 
 def create_motif(icpc, length, charset=charset):
 #should return a PWM with total information icpc*length
-    gencol = lambda : [random.randint(1,10) for y in range(0,len(charset))]
-    motif = [ gencol() for x in range(0,length)]
+    gencol = lambda : [0.0 +random.randint(1,5) for y in range(0,len(charset))]
+    motif = [gencol()  for x in range(0,length)]
     goalinfo = icpc*length
-    random.shuffle(motif)
+    while mot_info(motif) < goalinfo:
+        if col_info(motif[0])<icpc:
+            motif[0].sort()
+            motif[0][-1]+= sum(motif[0])+0.0
+            motif[0] = map(lambda x: x*.75,motif[0])
+            random.shuffle(motif[0])
+        random.shuffle(motif)
+    motif = [ map(lambda x: int(x*10),col) for col in motif]
     return motif
 
 def create_benchmark(icpc=2,ml=8,sl=500,sc=10):
