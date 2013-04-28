@@ -3,6 +3,3 @@ datasets
 #python compiled files
 *.pyc
 
-*.pyc
-
-createdataset.pyc
