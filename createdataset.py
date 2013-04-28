@@ -27,17 +27,22 @@ def mot_info(motif):
 
 def create_motif(icpc, length, charset=charset):
 #should return a PWM with total information icpc*length
-    gencol = lambda : [0.0 +random.randint(1,5) for y in range(0,len(charset))]
-    motif = [gencol()  for x in range(0,length)]
-    goalinfo = icpc*length
-    while mot_info(motif) < goalinfo:
-        if col_info(motif[0])<icpc:
-            motif[0].sort()
-            motif[0][-1]+= sum(motif[0])+0.0
-            motif[0] = map(lambda x: x*.75,motif[0])
-            random.shuffle(motif[0])
+    if icpc is not 2:
+        gencol = lambda : [0.0 +random.randint(1,5) for y in range(0,len(charset))]
+        motif = [gencol()  for x in range(0,length)]
+        goalinfo = icpc*length
+        while mot_info(motif) < goalinfo:
+            if col_info(motif[0])<icpc:
+                motif[0].sort()
+                motif[0][-1]+= sum(motif[0])+0.0
+                motif[0] = map(lambda x: x*.75,motif[0])
+                random.shuffle(motif[0])
+            random.shuffle(motif)
+        motif = [ map(lambda x: int(x*10),col) for col in motif]
+    else:
+        motif = [[1]+[0]*len(charset) for x in charset]
+        map(random.shuffle,motif)
         random.shuffle(motif)
-    motif = [ map(lambda x: int(x*10),col) for col in motif]
     return motif
 
 def create_benchmark(icpc=2,ml=8,sl=500,sc=10):
