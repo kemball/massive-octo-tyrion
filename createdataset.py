@@ -72,11 +72,7 @@ def create_benchmark(icpc=2,ml=8,sl=500,sc=10):
         for col in motif:
             mfile.write("\t".join([str(x) for x in col])+'\n')
         mfile.write('<')
-    with open('datasets/'+fileprefix+'/sequences.fa','w') as sfile:
-        for (num,seq) in enumerate(sequences):
-            sfile.write('>SEQ'+str(num)+'\n')
-            sfile.write(seq+'\n')
-
+    write_fasta('datasets/'+fileprefix+'/sequences.fa',sequences)
 
 def write_fasta(filename,strings,identifier="sequence"):
     f = open(filename,'w')
@@ -86,7 +82,7 @@ def write_fasta(filename,strings,identifier="sequence"):
             f.write(bases[0:80])
             f.write('\n')
             bases = bases[80:]
-        f.write(bases)
+        f.write(bases+'\n')
     f.close()
 
 def generaterandom(length=10,charset=charset):
