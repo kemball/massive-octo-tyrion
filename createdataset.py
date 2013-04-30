@@ -57,23 +57,24 @@ def create_benchmark(icpc=2,ml=8,sl=500,sc=10):
         if icpc == 2:
             assert(q in sequences[x])
     import os
-    fileprefix = 'icpc'+str(icpc)+'ml'+str(ml)+'sl'+str(sl)+'sc'+str(sc)+'0'
+    fileprefix = 'icpc'+str(icpc)+'ml'+str(ml)+'sl'+str(sl)+'sc'+str(sc)+'a'
     while fileprefix in os.listdir('datasets'):
-        fileprefix[-1] = str(int(fileprefix[-1])+1)
+        fileprefix = fileprefix[:-1]+str(chr(ord(fileprefix[-1])+1))
     os.mkdir('datasets/'+fileprefix)
 
     with open('datasets/' +fileprefix+'/sites.txt','w') as sitefile:
-        sitefile.write(str(site))
-    with open('datasets/'+fileprefix+'/motiflength.txt') as lenfile:
+        for site in offsets:
+            sitefile.write(str(site)+'\n')
+    with open('datasets/'+fileprefix+'/motiflength.txt','w') as lenfile:
         lenfile.write(str(ml))
-    with open('datasets/'+fileprefix+'/motif.txt') as mfile:
+    with open('datasets/'+fileprefix+'/motif.txt','w') as mfile:
         mfile.write('>MOTIF1\t' + str(ml)+'\n')
         for col in motif:
-            mfile.write("\t".join(col)+'\n')
+            mfile.write("\t".join([str(x) for x in col])+'\n')
         mfile.write('<')
-    with open('datasets/'+fileprefix+'/sequences.fa') as sfile:
+    with open('datasets/'+fileprefix+'/sequences.fa','w') as sfile:
         for (num,seq) in enumerate(sequences):
-            sfile.write('>MOTIF'+str(num)+'\n')
+            sfile.write('>SEQ'+str(num)+'\n')
             sfile.write(seq+'\n')
 
 
@@ -96,4 +97,11 @@ def generaterandom(length=10,charset=charset):
 
 
 if __name__=="__main__":
-    print "I create datasets in datasets/something!"
+    for x in range(0,10):
+        for icpc in [1,1.5]:
+            create_benchmark(icpc=icpc)
+        for ml in [6,7]:
+            create_benchmark(ml=ml)
+        for sc in [5,20]:
+            create_benchmark(sc=sc)
+        create_benchmark()
