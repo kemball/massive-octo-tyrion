@@ -62,12 +62,19 @@ def create_benchmark(icpc=2,ml=8,sl=500,sc=10):
         fileprefix[-1] = str(int(fileprefix[-1])+1)
     os.mkdir('datasets/'+fileprefix)
 
-    sitefile = open('datasets/'+fileprefix+'/sites.txt',w)
-    for site in offsets:
+    with open('datasets/' +fileprefix+'/sites.txt','w') as sitefile:
         sitefile.write(str(site))
-    finally:
-        sitefile.close()
-    #todo: write motifs, motiflength, sequences.fa
+    with open('datasets/'+fileprefix+'/motiflength.txt') as lenfile:
+        lenfile.write(str(ml))
+    with open('datasets/'+fileprefix+'/motif.txt') as mfile:
+        mfile.write('>MOTIF1\t' + str(ml)+'\n')
+        for col in motif:
+            mfile.write("\t".join(col)+'\n')
+        mfile.write('<')
+    with open('datasets/'+fileprefix+'/sequences.fa') as sfile:
+        for (num,seq) in enumerate(sequences):
+            sfile.write('>MOTIF'+str(num)+'\n')
+            sfile.write(seq+'\n')
 
 
 def write_fasta(filename,strings,identifier="sequence"):
