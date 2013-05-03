@@ -1,7 +1,7 @@
 #!/usr/bin/python
 from motifs import read_fasta
-
-charset = 'ACGT'
+from info import *
+#debug
 seq = read_fasta('../datasets/test/sequences.fa')
 
 
@@ -29,11 +29,14 @@ def score_motif(sequences,motif,offsets):
         motifchunks.append(sequences[seqnum][offset:offset+len(motif)])
     score = 0.0
     for chunk in motifchunks:
-        nchunk = map(lambda x: charset.find(x),chunk)
-        score +=sum([col[num]/float(sum(col))for num,col in zip(nchunk,motif)])
+        score += score_chunk(chunk,motif)
     return score/float(len(motif))
 
-
+def score_chunk(chunk,motif):
+    nchunk = map(lambda x: charset.find(x),chunk)
+    return sum([col[num]/float(sum(col)) for num,col in zip(nchunk,motif)])
+        nchunk = map(lambda x: charset.find(x),chunk)
+        score +=sum([col[num]/float(sum(col))for num,col in zip(nchunk,motif)])
 
 
 
