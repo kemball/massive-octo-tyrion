@@ -3,7 +3,6 @@ from motifs import read_fasta
 from info import *
 from math import log
 #debug
-seq = read_fasta('../datasets/test/sequences.fa')
 
 
 def cheapofind(length,sequences):
@@ -39,7 +38,7 @@ def score_motif(sequences,motif,offsets):
 
 def score_chunk(chunk,motif):
     nchunk = map(lambda x: charset.find(x),chunk)
-    rnum =5000
+    rnum =7500
     return reduce(lambda x,y: (1+rnum*x)*(1+rnum*y),([col[num]/float(sum(col)) for num,col in zip(nchunk,motif)]))
 
 def lfind(s,sub):
@@ -64,7 +63,16 @@ def offset_gen(sequence,motif):
         key -= possibles[displace][1]
     return random.choice(lfind(sequence,possibles[displace][0]))
 
-def bootstrap(seq,length,min = 1):
+def cleverboot(seq,length):
+    lmers = lambda x: [x[z:z+length] for z in range(0,len(x)-length)]
+    setmers = reduce(lambda x,y: set(x)|set(y),map(lmers,seq))
+    count = lambda x: sum([(x in s) for s in seq])
+    mers = list(setmers)
+    mers.sort(key=count)
+    return [s.find(mers[0]) for s in seq]
+#bleh, sort by length of lmer and rate/expected
+
+def bootstrap(seq,length,min = 2):
     s= set([])
     thresh = length
     while len(s) < min:
@@ -74,14 +82,14 @@ def bootstrap(seq,length,min = 1):
     random.shuffle(s)
     for el in s:
         poss = [lfind(thisseq,el) for thisseq in seq]
-        poss2 = [filter(lambda small: small<(len(seq[0])-length),p) for p in poss]
+        poss2 = [filter(lambda small: small<=(len(seq[0])-length),p) for p in poss]
         if [] in poss2:
             continue
         yield [random.choice(p) for p in poss2]
 
 
 def gibbs_iter(seq,length,iters=5000):
-    off = random.choice(list(bootstrap(seq,length,1)))
+    off = random.choice(list(bootstrap(seq,length)))
     nseq = seq[:]
     for zx in xrange(0,iters):
         szip = zip(nseq,off)
@@ -93,16 +101,16 @@ def gibbs_iter(seq,length,iters=5000):
         off[0] = offset_gen(nseq[0],m)
         if zx%(len(seq[0])/2) == 0:
             print mot_info(m)
-            if mot_info(m) >= 1.5*length:
-                soff = []
-                for s in seq:
-                    soff.append(off[nseq.index(s)])
-                return soff
             smot = score_motif(seq,m,off)
             if max(off)<len(seq[0])-8 and score_motif(seq,m,[o+1 for o in off])>smot:
                     off = [o+1 for o in off]
             if min(off)>0 and score_motif(seq,m,[o-1 for o in off])>smot:
                     off = [o-1 for o in off]
+            if mot_info(m) >= 1.5*length:
+                soff = []
+                for s in seq:
+                    soff.append(off[nseq.index(s)])
+                return soff
             if False:
                 print "mot_info(m) ("+str(mot_info(m))+") too small... restarting"
                 off = [random.randint(0,len(seq[0])-length) for s in seq]
@@ -124,5 +132,20 @@ def test():
     return off
 
 
+
 if __name__=="__main__":
-    print "I should be called with some files, then find some motifs!"
+    import sys
+    if len(sys.argv)>1:
+        for fdir in sys.argv[1:]:
+            seq = read_fasta(fdir+'/sequences.fa')
+            print fdir
+            length = 8
+            with open(fdir+'/motiflength.txt')as f:
+                length = int(f.read())
+            off = gibbs_iter(seq,length)
+            for c in chunks(seq,off,length):
+                print c
+            with open('nsites.txt','a') as ns:
+                ns.write(" ".join([str(o) for o in off])+'\n')
+            print off
+
