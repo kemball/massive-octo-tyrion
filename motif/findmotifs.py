@@ -68,6 +68,7 @@ def offset_gen(sequence,motif):
 def gibbs_iter(seq,length,iters=5000):
     off = [random.randint(0,len(s)-length-1) for s in seq]
 #this is actually a big problem. how to make better? cheapofind maybe
+#TODO:: bootstrapping with threemers
     nseq = seq[:]
     for zx in xrange(0,iters):
         szip = zip(nseq,off)
