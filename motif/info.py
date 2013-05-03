@@ -2,9 +2,6 @@
 charset = 'ACGT'
 import random
 def col_info(column):
-    #notable: assumes bases are uniform
-#normalize column for information purposes
-#returns information in bits. idk whether nats are better?
     from math import log
     totes = sum (column) +0.0#lawl float
     ncol = map(lambda x: x/totes,column)

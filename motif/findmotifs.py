@@ -16,6 +16,11 @@ def gen_pat(sequences,offsets,mlength):
     szip = zip(sequences,offsets)
     motif = []
     for x in range(0,mlength):
+        letters = []
+        for z in szip:
+            print z[1]
+            print z[1]+x
+            letters.append(z[0][z[1]+x])
         letters = map(lambda z: z[0][z[1]+x],szip)
         col = [0]*len(charset)
         for num,char in enumerate(charset):
@@ -57,19 +62,23 @@ def offset_gen(sequence,motif):
         seqthreemers = threemers(sequence)
         overlap = set(seqthreemers)&setsamp
     offsets = lfind(sequence,random.choice(list(overlap)))
-    chunkbetter = lambda a,b: score_chunk(sequence[a:a+len(motif)],motif)-score_chunk(sequence[b:b+len(motif)],motif)
+    offfsets = filter(lambda x: x<len(sequence)-len(motif),offsets)
+    chunkbetter = lambda a,b: int(score_chunk(sequence[a:a+len(motif)],motif)-score_chunk(sequence[b:b+len(motif)],motif))
     scored_offsets = sorted(offsets,cmp=chunkbetter)
     return random.choice(scored_offsets[:keepnum])
 
 def gibbs_iter(seq,length):
     off = [random.randint(0,len(s)-length) for s in seq]
 #loop
-    while True:
+    for zx in xrange(0,1000):
         szip = zip(seq,off)
         random.shuffle(szip)
-        seq,off = unzip(szip)
-        m=gen_pat(seq[1:],off[1:0],length)
+        seq,off = zip(*szip)
+        seq = list(seq)
+        off = list(off)
+        m=gen_pat(seq[1:],off[1:],length)
         off[0] = offset_gen(seq[0],m)
+    return off
 
 
 
