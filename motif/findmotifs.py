@@ -63,12 +63,17 @@ def offset_gen(sequence,motif):
         key -= possibles[displace][1]
     return random.choice(lfind(sequence,possibles[displace][0]))
 
-
+def bootstrap(seq,length,min = 2):
+    s= set([])
+    while len(s) < min:
+        s = cheapofind(length,seq)
+        length -= 1
+    for el in s:
+        yield [thisseq.find(el) for thisseq in seq]
 
 def gibbs_iter(seq,length,iters=5000):
     off = [random.randint(0,len(s)-length-1) for s in seq]
-#this is actually a big problem. how to make better? cheapofind maybe
-#TODO:: bootstrapping with threemers
+    off = bootstrap(seq,length,1)
     nseq = seq[:]
     for zx in xrange(0,iters):
         szip = zip(nseq,off)
@@ -85,7 +90,11 @@ def gibbs_iter(seq,length,iters=5000):
                     off = [o+1 for o in off]
             if score_motif(seq,m,[o-1 for o in off])>smot:
                     off = [o-1 for o in off]
-            print mot_info(m)
+            if mot_info(m) <9:
+                off = bootstrap(seq,length,10)
+                print "mot_info(m) ("+str(mot_info(m))+") too small... restarting"
+            if mot_info(m) > 15:
+                break
     #now I have to put things back in order? wooooork
     soff = []
     for s in seq:
@@ -99,7 +108,7 @@ def test():
     off = gibbs_iter(seq,8)
     for c in chunks(seq,off,8):
         print c
-    print cheapofind(8,seq)
+    print mot_info(gen_pat(seq,off,8))
     return off
 
 
