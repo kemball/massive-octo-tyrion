@@ -39,7 +39,8 @@ def score_motif(sequences,motif,offsets):
 
 def score_chunk(chunk,motif):
     nchunk = map(lambda x: charset.find(x),chunk)
-    return reduce(lambda x,y: (1+10000*x)*(1+10000*y),([col[num]/float(sum(col)) for num,col in zip(nchunk,motif)]))
+    rnum =5000
+    return reduce(lambda x,y: (1+rnum*x)*(1+rnum*y),([col[num]/float(sum(col)) for num,col in zip(nchunk,motif)]))
 
 def lfind(s,sub):
     l = []
@@ -52,7 +53,6 @@ def lfind(s,sub):
 
 def offset_gen(sequence,motif):
     minfo = mot_info(motif)
-    expected = len(sequence)/2**minfo
     mers = list(set([sequence[x:x+len(motif)] for x in range(0,len(sequence)-len(motif))]))
     possibles = [(mer,score_chunk(mer,motif)) for mer in mers]
     possibles.sort(key=lambda x: x[1])
@@ -64,7 +64,7 @@ def offset_gen(sequence,motif):
         key -= possibles[displace][1]
     return random.choice(lfind(sequence,possibles[displace][0]))
 
-def bootstrap(seq,length,min = 2):
+def bootstrap(seq,length,min = 1):
     s= set([])
     thresh = length
     while len(s) < min:
@@ -91,9 +91,9 @@ def gibbs_iter(seq,length,iters=5000):
         off = list(off)
         m=gen_pat(nseq[1:],off[1:],length)
         off[0] = offset_gen(nseq[0],m)
-        if zx%(len(seq[0])/10) == 0:
+        if zx%(len(seq[0])/2) == 0:
             print mot_info(m)
-            if mot_info(m) > 1.5*length:
+            if mot_info(m) >= 1.5*length:
                 soff = []
                 for s in seq:
                     soff.append(off[nseq.index(s)])
