@@ -2,6 +2,8 @@
 from motifs import read_fasta
 
 charset = 'ACGT'
+seq = read_fasta('../datasets/test/sequences.fa')
+
 
 def cheapofind(length,sequences):
     lmersets = []
@@ -12,11 +14,25 @@ def cheapofind(length,sequences):
 
 def gen_pat(sequences,offsets,mlength):
     szip = zip(sequences,offsets)
+    motif = []
     for x in range(0,mlength):
         letters = map(lambda z: z[0][z[1]+x],szip)
         col = [0]*len(charset)
         for num,char in enumerate(charset):
-            col[num] = string.count(letters,char)
+            col[num] = letters.count(char)
+        motif.append(col)
+    return motif
+
+def score_motif(sequences,motif,offsets):
+    motifchunks = []
+    for seqnum,offset in enumerate(offsets):
+        motifchunks.append(sequences[seqnum][offset:offset+len(motif)])
+    score = 0.0
+    for chunk in motifchunks:
+        nchunk = map(lambda x: charset.find(x),chunk)
+        score +=sum([col[num]/sum(col)for num,col in zip(nchunk,motif)])
+    return score/float(len(motif))
+
 
 
 
