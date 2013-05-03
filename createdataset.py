@@ -44,7 +44,7 @@ def create_benchmark(icpc=2,ml=8,sl=500,sc=10):
     os.mkdir('datasets/'+fileprefix)
 
     with open('datasets/' +fileprefix+'/sites.txt','w') as sitefile:
-        for site in sorted(offsets):
+        for site in offsets:
             sitefile.write(str(site)+'\n')
     with open('datasets/'+fileprefix+'/motiflength.txt','w') as lenfile:
         lenfile.write(str(ml))
