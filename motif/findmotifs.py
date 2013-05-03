@@ -30,7 +30,7 @@ def score_motif(sequences,motif,offsets):
     score = 0.0
     for chunk in motifchunks:
         nchunk = map(lambda x: charset.find(x),chunk)
-        score +=sum([col[num]/sum(col)for num,col in zip(nchunk,motif)])
+        score +=sum([col[num]/float(sum(col))for num,col in zip(nchunk,motif)])
     return score/float(len(motif))
 
 
