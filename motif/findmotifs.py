@@ -35,8 +35,25 @@ def score_motif(sequences,motif,offsets):
 def score_chunk(chunk,motif):
     nchunk = map(lambda x: charset.find(x),chunk)
     return sum([col[num]/float(sum(col)) for num,col in zip(nchunk,motif)])
-        nchunk = map(lambda x: charset.find(x),chunk)
-        score +=sum([col[num]/float(sum(col))for num,col in zip(nchunk,motif)])
+
+def lfind(s,sub):
+    l = []
+    start = 0
+    while s.find(sub,start) is not -1:
+        l.append(s.find(sub,start))
+        start +=s.find(sub,start)+len(sub)
+    return l
+
+
+def offset_gen(sequence,motif):
+    minfo = motif_info(motif)
+    keepnum = len(sequence)
+    overlap = []
+    while len(overlap)==0:
+        sample = sample_motif(motif)
+        seqthreemers = [sequence[x:x+3] for x in range(0,len(sequence)-3)]
+        samplethreemers = [sample[x:x+3] for x in range(0,len(sample)-3)]
+        overlap = set(seqthreemers)&set(samplethreemers)
 
 
 
