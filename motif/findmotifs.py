@@ -1,17 +1,13 @@
 #!/usr/bin/python
-def read_fasta(filename):
-    with open(filename,'r') as f:
-        sc = 0
-        seq=[""]
-        for line in f:
-            if '>' in line:
-                sc = sc+1
-                seq.append("")
-                continue
-            if sc:
-                seq[sc] = seq[sc]+line.rstrip()
-        return seq
+from motifs import read_fasta
 
+def cheapofind(length,sequences):
+    lmersets = []
+    for seq in sequences:
+        lmers = [seq[x:length+x] for x in range(0,len(seq)-length+1)]
+        lmersets.append(set(lmers))
+    return lmersets
+    return reduce(lambda x,y: x&y, lmersets)
 
 
 
