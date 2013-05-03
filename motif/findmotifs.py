@@ -11,7 +11,7 @@ def cheapofind(length,sequences):
     for seq in sequences:
         lmers = [seq[x:length+x] for x in range(0,len(seq)-length+1)]
         lmersets.append(set(lmers))
-    return reduce(lambda x,y: x&y, lmersets)
+    return list(reduce(lambda x,y: x&y, lmersets))
 
 def gen_pat(sequences,offsets,mlength):
     szip = zip(sequences,offsets)
@@ -65,11 +65,11 @@ def offset_gen(sequence,motif):
 
 
 
-def gibbs_iter(seq,length):
+def gibbs_iter(seq,length,iters=5000):
     off = [random.randint(0,len(s)-length-1) for s in seq]
-#loop
+#this is actually a big problem. how to make better? cheapofind maybe
     nseq = seq[:]
-    for zx in xrange(0,5000):
+    for zx in xrange(0,iters):
         szip = zip(nseq,off)
         random.shuffle(szip)
         nseq,off = zip(*szip)
@@ -93,6 +93,13 @@ def gibbs_iter(seq,length):
 
 def chunks(seq,off,length):
     return [s[o:o+length] for s,o in zip(seq,off)]
+
+def test():
+    off = gibbs_iter(seq,8)
+    for c in chunks(seq,off,8):
+        print c
+    print cheapofind(8,seq)
+    return off
 
 
 if __name__=="__main__":
