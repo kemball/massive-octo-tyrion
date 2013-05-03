@@ -64,10 +64,12 @@ def offset_gen(sequence,motif):
 def gibbs_iter(seq,length):
     off = [random.randint(0,len(s)-length) for s in seq]
 #loop
-    szip = zip(seq,off)
-    random.shuffle(szip)
-    seq,off = unzip(szip)
-    m=gen_pat(seq[1:],off[1:0],length)
+    while True:
+        szip = zip(seq,off)
+        random.shuffle(szip)
+        seq,off = unzip(szip)
+        m=gen_pat(seq[1:],off[1:0],length)
+        off[0] = offset_gen(seq[0],m)
 
 
 
