@@ -28,6 +28,7 @@ def gen_pat(sequences,offsets,mlength):
     return motif
 
 def score_motif(sequences,motif,offsets):
+    return mot_info(gen_pat(sequences,offsets,len(motif)))
     motifchunks = []
     for seqnum,offset in enumerate(offsets):
         motifchunks.append(sequences[seqnum][offset:offset+len(motif)])
@@ -38,7 +39,7 @@ def score_motif(sequences,motif,offsets):
 
 def score_chunk(chunk,motif):
     nchunk = map(lambda x: charset.find(x),chunk)
-    return reduce(lambda x,y: x*y,([col[num]/float(sum(col)) for num,col in zip(nchunk,motif)]))
+    return reduce(lambda x,y: (1+10000*x)*(1+10000*y),([col[num]/float(sum(col)) for num,col in zip(nchunk,motif)]))
 
 def lfind(s,sub):
     l = []
@@ -55,7 +56,7 @@ def offset_gen(sequence,motif):
     mers = list(set([sequence[x:x+len(motif)] for x in range(0,len(sequence)-len(motif))]))
     possibles = [(mer,score_chunk(mer,motif)) for mer in mers]
     possibles.sort(key=lambda x: x[1])
-    total = sum([poss[1] for poss in possibles])
+    total = max([poss[1] for poss in possibles])
     key = random.random()*total
     displace=-1
     while key >0:
@@ -82,8 +83,6 @@ def bootstrap(seq,length,min = 2):
 def gibbs_iter(seq,length,iters=5000):
     off = random.choice(list(bootstrap(seq,length,1)))
     nseq = seq[:]
-    for c in chunks(seq,off,length):
-        print c
     for zx in xrange(0,iters):
         szip = zip(nseq,off)
         random.shuffle(szip)
@@ -92,18 +91,19 @@ def gibbs_iter(seq,length,iters=5000):
         off = list(off)
         m=gen_pat(nseq[1:],off[1:],length)
         off[0] = offset_gen(nseq[0],m)
-        if zx%(len(seq[0])) == 0:
-            smot = score_motif(seq,m,off)
-            if max(off)<len(seq[0])-8 and score_motif(seq,m,[o+1 for o in off])>smot:
-                    off = [o+1 for o in off]
-            if min(off)>0 and score_motif(seq,m,[o-1 for o in off])>smot:
-                    off = [o-1 for o in off]
+        if zx%(len(seq[0])/10) == 0:
+            print mot_info(m)
             if mot_info(m) > 1.5*length:
                 soff = []
                 for s in seq:
                     soff.append(off[nseq.index(s)])
                 return soff
-            if random.randint(0,int(mot_info(m)))==0:
+            smot = score_motif(seq,m,off)
+            if max(off)<len(seq[0])-8 and score_motif(seq,m,[o+1 for o in off])>smot:
+                    off = [o+1 for o in off]
+            if min(off)>0 and score_motif(seq,m,[o-1 for o in off])>smot:
+                    off = [o-1 for o in off]
+            if False:
                 print "mot_info(m) ("+str(mot_info(m))+") too small... restarting"
                 off = [random.randint(0,len(seq[0])-length) for s in seq]
                 continue
