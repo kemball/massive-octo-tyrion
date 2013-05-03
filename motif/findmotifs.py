@@ -46,17 +46,28 @@ def lfind(s,sub):
 
 
 def offset_gen(sequence,motif):
-    minfo = motif_info(motif)
-    keepnum = len(sequence)
+    minfo = mot_info(motif)
+    keepnum = len(sequence)/2**minfo+1.0
+    keepnum = int(keepnum)
     overlap = []
     while len(overlap)==0:
+        threemers = lambda splot: [splot[x:x+3] for x in range(0,len(splot)-2)]
         sample = sample_motif(motif)
-        seqthreemers = [sequence[x:x+3] for x in range(0,len(sequence)-3)]
-        samplethreemers = [sample[x:x+3] for x in range(0,len(sample)-3)]
-        overlap = set(seqthreemers)&set(samplethreemers)
+        setsamp = set(threemers(sample))
+        seqthreemers = threemers(sequence)
+        overlap = set(seqthreemers)&setsamp
+    offsets = lfind(sequence,random.choice(list(overlap)))
+    chunkbetter = lambda a,b: score_chunk(sequence[a:a+len(motif)],motif)-score_chunk(sequence[b:b+len(motif)],motif)
+    scored_offsets = sorted(offsets,cmp=chunkbetter)
+    return random.choice(scored_offsets[:keepnum])
 
-
-
+def gibbs_iter(seq,length):
+    off = [random.randint(0,len(s)-length) for s in seq]
+#loop
+    szip = zip(seq,off)
+    random.shuffle(szip)
+    seq,off = unzip(szip)
+    m=gen_pat(seq[1:],off[1:0],length)
 
 
 
