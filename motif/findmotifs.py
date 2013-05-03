@@ -1,6 +1,7 @@
 #!/usr/bin/python
 from motifs import read_fasta
 from info import *
+from math import log
 #debug
 seq = read_fasta('../datasets/test/sequences.fa')
 
@@ -18,8 +19,6 @@ def gen_pat(sequences,offsets,mlength):
     for x in range(0,mlength):
         letters = []
         for z in szip:
-            print z[1]
-            print z[1]+x
             letters.append(z[0][z[1]+x])
         letters = map(lambda z: z[0][z[1]+x],szip)
         col = [0]*len(charset)
@@ -35,11 +34,11 @@ def score_motif(sequences,motif,offsets):
     score = 0.0
     for chunk in motifchunks:
         score += score_chunk(chunk,motif)
-    return score/float(len(motif))
+    return score
 
 def score_chunk(chunk,motif):
     nchunk = map(lambda x: charset.find(x),chunk)
-    return sum([col[num]/float(sum(col)) for num,col in zip(nchunk,motif)])
+    return reduce(lambda x,y: x*y,([col[num]/float(sum(col)) for num,col in zip(nchunk,motif)]))
 
 def lfind(s,sub):
     l = []
@@ -52,34 +51,48 @@ def lfind(s,sub):
 
 def offset_gen(sequence,motif):
     minfo = mot_info(motif)
-    keepnum = len(sequence)/2**minfo+1.0
-    keepnum = int(keepnum)
-    overlap = []
-    while len(overlap)==0:
-        threemers = lambda splot: [splot[x:x+3] for x in range(0,len(splot)-2)]
-        sample = sample_motif(motif)
-        setsamp = set(threemers(sample))
-        seqthreemers = threemers(sequence)
-        overlap = set(seqthreemers)&setsamp
-    offsets = lfind(sequence,random.choice(list(overlap)))
-    offfsets = filter(lambda x: x<len(sequence)-len(motif),offsets)
-    chunkbetter = lambda a,b: int(score_chunk(sequence[a:a+len(motif)],motif)-score_chunk(sequence[b:b+len(motif)],motif))
-    scored_offsets = sorted(offsets,cmp=chunkbetter)
-    return random.choice(scored_offsets[:keepnum])
+    expected = len(sequence)/2**minfo
+    mers = list(set([sequence[x:x+len(motif)] for x in range(0,len(sequence)-len(motif))]))
+    possibles = [(mer,score_chunk(mer,motif)) for mer in mers]
+    possibles.sort(key=lambda x: x[1])
+    total = sum([poss[1] for poss in possibles])
+    key = random.random()*total
+    displace=-1
+    while key >0:
+        displace+=1
+        key -= possibles[displace][1]
+    return random.choice(lfind(sequence,possibles[displace][0]))
+
+
 
 def gibbs_iter(seq,length):
-    off = [random.randint(0,len(s)-length) for s in seq]
+    off = [random.randint(0,len(s)-length-1) for s in seq]
 #loop
-    for zx in xrange(0,1000):
-        szip = zip(seq,off)
+    nseq = seq[:]
+    for zx in xrange(0,5000):
+        szip = zip(nseq,off)
         random.shuffle(szip)
-        seq,off = zip(*szip)
-        seq = list(seq)
+        nseq,off = zip(*szip)
+        nseq = list(nseq)
         off = list(off)
-        m=gen_pat(seq[1:],off[1:],length)
-        off[0] = offset_gen(seq[0],m)
-    return off
+        m=gen_pat(nseq[1:],off[1:],length)
+        off[0] = offset_gen(nseq[0],m)
+#check for sliding
+        if zx%(len(seq[0])) == 0:
+            smot = score_motif(seq,m,off)
+            if score_motif(seq,m,[o+1 for o in off])>smot:
+                    off = [o+1 for o in off]
+            if score_motif(seq,m,[o-1 for o in off])>smot:
+                    off = [o-1 for o in off]
+            print mot_info(m)
+    #now I have to put things back in order? wooooork
+    soff = []
+    for s in seq:
+        soff.append(off[nseq.index(s)])
+    return soff
 
+def chunks(seq,off,length):
+    return [s[o:o+length] for s,o in zip(seq,off)]
 
 
 if __name__=="__main__":
