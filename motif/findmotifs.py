@@ -65,16 +65,25 @@ def offset_gen(sequence,motif):
 
 def bootstrap(seq,length,min = 2):
     s= set([])
+    thresh = length
     while len(s) < min:
-        s = cheapofind(length,seq)
-        length -= 1
+        s = cheapofind(thresh,seq)
+        thresh -= 1
+    s = list(s)
+    random.shuffle(s)
     for el in s:
-        yield [thisseq.find(el) for thisseq in seq]
+        poss = [lfind(thisseq,el) for thisseq in seq]
+        poss2 = [filter(lambda small: small<(len(seq[0])-length),p) for p in poss]
+        if [] in poss2:
+            continue
+        yield [random.choice(p) for p in poss2]
+
 
 def gibbs_iter(seq,length,iters=5000):
-    off = [random.randint(0,len(s)-length-1) for s in seq]
-    off = bootstrap(seq,length,1)
+    off = random.choice(list(bootstrap(seq,length,1)))
     nseq = seq[:]
+    for c in chunks(seq,off,length):
+        print c
     for zx in xrange(0,iters):
         szip = zip(nseq,off)
         random.shuffle(szip)
@@ -83,18 +92,21 @@ def gibbs_iter(seq,length,iters=5000):
         off = list(off)
         m=gen_pat(nseq[1:],off[1:],length)
         off[0] = offset_gen(nseq[0],m)
-#check for sliding
         if zx%(len(seq[0])) == 0:
             smot = score_motif(seq,m,off)
-            if score_motif(seq,m,[o+1 for o in off])>smot:
+            if max(off)<len(seq[0])-8 and score_motif(seq,m,[o+1 for o in off])>smot:
                     off = [o+1 for o in off]
-            if score_motif(seq,m,[o-1 for o in off])>smot:
+            if min(off)>0 and score_motif(seq,m,[o-1 for o in off])>smot:
                     off = [o-1 for o in off]
-            if mot_info(m) <9:
-                off = bootstrap(seq,length,10)
+            if mot_info(m) > 1.5*length:
+                soff = []
+                for s in seq:
+                    soff.append(off[nseq.index(s)])
+                return soff
+            if random.randint(0,int(mot_info(m)))==0:
                 print "mot_info(m) ("+str(mot_info(m))+") too small... restarting"
-            if mot_info(m) > 15:
-                break
+                off = [random.randint(0,len(seq[0])-length) for s in seq]
+                continue
     #now I have to put things back in order? wooooork
     soff = []
     for s in seq:
