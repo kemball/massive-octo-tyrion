@@ -144,13 +144,18 @@ if __name__=="__main__":
             with open(fdir+'/motiflength.txt')as f:
                 length = int(f.read())
             with open(fdir+'/nsites.txt','a') as ns:
-                ns.write(fdir)
-                ns.write(str(clock()))
+                ns.write(fdir+'\n')
+                ns.write(str(clock())+'\n')
             off = gibbs_iter(seq,length)
             for c in chunks(seq,off,length):
                 print c
             with open(fdir+'/nsites.txt','a') as ns:
+                ns.write(str(clock())+'\n')
                 ns.write(" ".join([str(o) for o in off])+'\n')
-                ns.write(str(clock()))
+            motif = gen_pat(seq,off,length)
+            with open(fdir+'/fmotif.txt','w') as mfile:
+                for col in motif:
+                    mfile.write("\t".join([str(x) for x in col])+'\n')
+                mfile.write('<')
             print off
 
