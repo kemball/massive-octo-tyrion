@@ -135,6 +135,7 @@ def test():
 
 if __name__=="__main__":
     import sys
+    from time import clock
     if len(sys.argv)>1:
         for fdir in sys.argv[1:]:
             seq = read_fasta(fdir+'/sequences.fa')
@@ -142,10 +143,14 @@ if __name__=="__main__":
             length = 8
             with open(fdir+'/motiflength.txt')as f:
                 length = int(f.read())
+            with open(fdir+'/nsites.txt','a') as ns:
+                ns.write(fdir)
+                ns.write(str(clock()))
             off = gibbs_iter(seq,length)
             for c in chunks(seq,off,length):
                 print c
-            with open('nsites.txt','a') as ns:
+            with open(fdir+'/nsites.txt','a') as ns:
                 ns.write(" ".join([str(o) for o in off])+'\n')
+                ns.write(str(clock()))
             print off
 
