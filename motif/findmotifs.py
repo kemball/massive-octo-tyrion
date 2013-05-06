@@ -39,7 +39,7 @@ def score_motif(sequences,motif,offsets):
 def score_chunk(chunk,motif):
     nchunk = map(lambda x: charset.find(x),chunk)
     rnum =7500
-    return reduce(lambda x,y: (1+rnum*x)*(1+rnum*y),([col[num]/float(sum(col)) for num,col in zip(nchunk,motif)]))
+    return reduce(lambda x,y: x*y,map(lambda x: max(1.0/rnum,x),[col[num]/float(sum(col)) for num,col in zip(nchunk,motif)]))
 
 def lfind(s,sub):
     l = []
