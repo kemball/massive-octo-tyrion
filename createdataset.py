@@ -77,7 +77,7 @@ if __name__=="__main__":
     for x in range(0,10):
         for icpc in [1,1.5,1.6,1.7,1.8,1.85,1.9,1.95]:
             create_benchmark(icpc=icpc)
-        for ml in [6,7,9,10]:
+        for ml in [6,7]:
             create_benchmark(ml=ml)
         for sc in [5,20]:
             create_benchmark(sc=sc)
