@@ -63,14 +63,6 @@ def offset_gen(sequence,motif):
         key -= possibles[displace][1]
     return random.choice(lfind(sequence,possibles[displace][0]))
 
-def cleverboot(seq,length):
-    lmers = lambda x: [x[z:z+length] for z in range(0,len(x)-length)]
-    setmers = reduce(lambda x,y: set(x)|set(y),map(lmers,seq))
-    count = lambda x: sum([(x in s) for s in seq])
-    mers = list(setmers)
-    mers.sort(key=count)
-    return [s.find(mers[0]) for s in seq]
-#bleh, sort by length of lmer and rate/expected
 
 def bootstrap(seq,length,min = 2):
     s= set([])
